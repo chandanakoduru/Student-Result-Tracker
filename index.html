@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Result Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #0b1d35;
+    --navy2: #122540;
+    --gold: #e8b84b;
+    --gold2: #f5d07a;
+    --cream: #f8f4ee;
+    --cream2: #ede9e2;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --pass: #15803d;
+    --pass-bg: #dcfce7;
+    --fail: #b91c1c;
+    --fail-bg: #fee2e2;
+    --card: #ffffff;
+    --border: #e5e0d8;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--navy);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold2), var(--gold));
+  }
+  .header-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 2rem 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .header-brand h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.8rem;
+    color: #fff;
+    letter-spacing: -0.01em;
+  }
+  .header-brand p {
+    font-size: 0.78rem;
+    color: var(--gold);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-ghost {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.15); }
+  .btn-gold {
+    background: var(--gold);
+    color: var(--navy);
+    font-weight: 600;
+  }
+  .btn-gold:hover { background: var(--gold2); transform: translateY(-1px); }
+  .btn-primary {
+    background: var(--navy);
+    color: #fff;
+    font-weight: 600;
+  }
+  .btn-primary:hover { background: var(--navy2); }
+  .btn-danger {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+  }
+  .btn-danger:hover { background: #fecaca; }
+  .btn-sm { padding: 5px 12px; font-size: 0.76rem; }
+
+  /* STUDENT INFO BAR */
+  .info-bar {
+    background: var(--navy2);
+    border-bottom: 1px solid rgba(232,184,75,0.2);
+  }
+  .info-bar-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 14px 2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .info-bar label { font-size: 0.72rem; color: var(--gold); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 3px; }
+  .info-bar input {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+    outline: none;
+    width: 180px;
+  }
+  .info-bar input::placeholder { color: rgba(255,255,255,0.35); }
+  .info-bar input:focus { border-color: var(--gold); }
+  .info-field { display: flex; flex-direction: column; }
+
+  /* MAIN */
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  /* SUMMARY CARDS */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    margin-bottom: 2rem;
+  }
+  .summary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent, var(--gold));
+  }
+  .summary-card .s-val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: var(--navy);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .summary-card .s-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .summary-card.pass-card { --accent: #16a34a; }
+  .summary-card.fail-card { --accent: #dc2626; }
+  .summary-card.gpa-card { --accent: #7c3aed; }
+  .summary-card.grade-card { --accent: #0891b2; }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.3rem;
+    color: var(--navy);
+  }
+
+  /* ADD SUBJECT FORM */
+  .add-form {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.4rem;
+    margin-bottom: 1.5rem;
+    display: none;
+  }
+  .add-form.open { display: block; }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  @media(max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+  .form-group label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    display: block;
+    margin-bottom: 5px;
+  }
+  .form-group input, .form-group select {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    outline: none;
+    background: var(--cream);
+    color: var(--text);
+    transition: border-color 0.15s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--navy); background: #fff; }
+  .form-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+  /* RESULTS TABLE */
+  .table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: var(--navy); }
+  thead th {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 12px 16px;
+    text-align: left;
+  }
+  thead th:not(:first-child) { text-align: center; }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--cream); }
+  tbody td {
+    padding: 13px 16px;
+    font-size: 0.88rem;
+    color: var(--text);
+  }
+  tbody td:not(:first-child) { text-align: center; }
+  .subject-name { font-weight: 500; }
+  .badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+  .badge-pass { background: var(--pass-bg); color: var(--pass); }
+  .badge-fail { background: var(--fail-bg); color: var(--fail); }
+  .grade-a-plus { color: #7c3aed; font-weight: 700; }
+  .grade-a { color: #0891b2; font-weight: 700; }
+  .grade-b { color: #15803d; font-weight: 700; }
+  .grade-c { color: #b45309; font-weight: 700; }
+  .grade-d { color: #c2410c; font-weight: 700; }
+  .grade-f { color: #dc2626; font-weight: 700; }
+  .delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 1rem;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color 0.15s;
+  }
+  .delete-btn:hover { color: #dc2626; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--muted);
+  }
+  .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+  .empty-state p { font-size: 0.9rem; }
+
+  /* FOOTER SUMMARY */
+  .result-footer {
+    background: var(--navy);
+    border-radius: 12px;
+    padding: 1.5rem;
+    color: #fff;
+    display: none;
+  }
+  .result-footer.show { display: block; }
+  .result-footer h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .result-rows { display: flex; flex-direction: column; gap: 8px; }
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    color: rgba(255,255,255,0.7);
+  }
+  .result-row span:last-child { color: #fff; font-weight: 500; }
+  .result-row.highlight span:last-child { color: var(--gold); font-size: 1rem; font-weight: 600; }
+
+  /* PRINT */
+  @media print {
+    header, .info-bar, .add-form, .header-actions, .form-actions, .delete-btn, .btn-ghost, .btn-gold, .btn-danger { display: none !important; }
+    body { background: #fff; }
+    .table-wrap, .summary-card, .result-footer { box-shadow: none; }
+    .result-footer { border: 1px solid #ccc; }
+  }
+
+  /* PROGRESS BAR in cell */
+  .pct-bar-wrap { display: flex; align-items: center; gap: 8px; justify-content: center; }
+  .pct-bar { height: 5px; border-radius: 3px; background: #e5e7eb; width: 60px; overflow: hidden; display: inline-block; }
+  .pct-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--navy); color: #fff;
+    padding: 10px 22px; border-radius: 30px;
+    font-size: 0.82rem; font-weight: 500;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 999;
+    border: 1px solid rgba(232,184,75,0.4);
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-brand">
+      <h1>&#127979; Result Tracker</h1>
+      <p>Academic Performance Dashboard</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-sm" onclick="clearAll()">&#128465; Clear All</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.print()">&#128438; Print</button>
+      <button class="btn btn-gold" onclick="toggleForm()">&#43; Add Subject</button>
+    </div>
+  </div>
+</header>
+
+<div class="info-bar">
+  <div class="info-bar-inner">
+    <div class="info-field">
+      <label>Student Name</label>
+      <input type="text" id="studentName" placeholder="e.g. Srichandana" oninput="saveInfo()">
+    </div>
+    <div class="info-field">
+      <label>Roll Number</label>
+      <input type="text" id="rollNo" placeholder="e.g. CB.SC.U4CSE24001" oninput="saveInfo()">
+    </div>
+    <div class="info-field">
+      <label>Semester</label>
+      <input type="text" id="semester" placeholder="e.g. Semester 1" oninput="saveInfo()">
+    </div>
+    <div class="info-field">
+      <label>Academic Year</label>
+      <input type="text" id="acadYear" placeholder="e.g. 2024 - 2025" oninput="saveInfo()">
+    </div>
+  </div>
+</div>
+
+<main>
+  <!-- Summary -->
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="s-val" id="s-total">0</div>
+      <div class="s-label">Subjects</div>
+    </div>
+    <div class="summary-card">
+      <div class="s-val" id="s-pct">—</div>
+      <div class="s-label">Overall %</div>
+    </div>
+    <div class="summary-card gpa-card">
+      <div class="s-val" id="s-gpa">—</div>
+      <div class="s-label">CGPA (10)</div>
+    </div>
+    <div class="summary-card grade-card">
+      <div class="s-val" id="s-grade">—</div>
+      <div class="s-label">Overall Grade</div>
+    </div>
+    <div class="summary-card pass-card">
+      <div class="s-val" id="s-pass">0</div>
+      <div class="s-label">Passed</div>
+    </div>
+    <div class="summary-card fail-card">
+      <div class="s-val" id="s-fail">0</div>
+      <div class="s-label">Failed</div>
+    </div>
+  </div>
+
+  <!-- Add Form -->
+  <div class="add-form" id="addForm">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Subject Name</label>
+        <input type="text" id="f-name" placeholder="e.g. Data Structures">
+      </div>
+      <div class="form-group">
+        <label>Max Marks</label>
+        <input type="number" id="f-max" placeholder="100" min="1" value="100">
+      </div>
+      <div class="form-group">
+        <label>Marks Obtained</label>
+        <input type="number" id="f-obtained" placeholder="0" min="0">
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label>Subject Type (optional)</label>
+      <select id="f-type" style="width:auto; min-width:200px;">
+        <option>Theory</option>
+        <option>Lab / Practical</option>
+        <option>Project</option>
+        <option>Elective</option>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-danger btn-sm" onclick="toggleForm()">Cancel</button>
+      <button class="btn btn-primary" onclick="addSubject()">Add Subject &#8594;</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="section-header">
+    <span class="section-title">Subject Results</span>
+    <span style="font-size:0.78rem; color:var(--muted);">Pass mark: 40%</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Subject</th>
+          <th>Type</th>
+          <th>Max</th>
+          <th>Obtained</th>
+          <th>Percentage</th>
+          <th>Grade</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="resultsBody"></tbody>
+    </table>
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">&#128196;</div>
+      <p>No subjects added yet. Click <strong>+ Add Subject</strong> to get started.</p>
+    </div>
+  </div>
+
+  <!-- Result Footer -->
+  <div class="result-footer" id="resultFooter">
+    <h3>&#127941; Performance Summary</h3>
+    <div class="result-rows">
+      <div class="result-row"><span>Student Name</span><span id="r-name">—</span></div>
+      <div class="result-row"><span>Roll Number</span><span id="r-roll">—</span></div>
+      <div class="result-row"><span>Semester</span><span id="r-sem">—</span></div>
+      <div class="result-row"><span>Total Subjects</span><span id="r-total">—</span></div>
+      <div class="result-row"><span>Total Marks</span><span id="r-marks">—</span></div>
+      <div class="result-row highlight"><span>Overall Percentage</span><span id="r-pct">—</span></div>
+      <div class="result-row highlight"><span>CGPA (out of 10)</span><span id="r-gpa">—</span></div>
+      <div class="result-row highlight"><span>Final Grade</span><span id="r-grade">—</span></div>
+      <div class="result-row"><span>Subjects Passed</span><span id="r-pass">—</span></div>
+      <div class="result-row"><span>Subjects Failed</span><span id="r-fail">—</span></div>
+      <div class="result-row highlight"><span>Result</span><span id="r-result">—</span></div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let subjects = JSON.parse(localStorage.getItem('srt-subjects') || '[]');
+
+  function saveInfo() {
+    localStorage.setItem('srt-info', JSON.stringify({
+      name: document.getElementById('studentName').value,
+      roll: document.getElementById('rollNo').value,
+      sem: document.getElementById('semester').value,
+      year: document.getElementById('acadYear').value
+    }));
+    updateResultFooter();
+  }
+
+  function loadInfo() {
+    const info = JSON.parse(localStorage.getItem('srt-info') || '{}');
+    if (info.name) document.getElementById('studentName').value = info.name;
+    if (info.roll) document.getElementById('rollNo').value = info.roll;
+    if (info.sem) document.getElementById('semester').value = info.sem;
+    if (info.year) document.getElementById('acadYear').value = info.year;
+  }
+
+  function toggleForm() {
+    const f = document.getElementById('addForm');
+    f.classList.toggle('open');
+    if (f.classList.contains('open')) document.getElementById('f-name').focus();
+  }
+
+  function getGrade(pct) {
+    if (pct >= 90) return { g: 'A+', cls: 'grade-a-plus' };
+    if (pct >= 80) return { g: 'A', cls: 'grade-a' };
+    if (pct >= 70) return { g: 'B', cls: 'grade-b' };
+    if (pct >= 60) return { g: 'C', cls: 'grade-c' };
+    if (pct >= 50) return { g: 'D', cls: 'grade-d' };
+    if (pct >= 40) return { g: 'E', cls: 'grade-d' };
+    return { g: 'F', cls: 'grade-f' };
+  }
+
+  function getGPA(pct) {
+    if (pct >= 90) return 10;
+    if (pct >= 80) return 9;
+    if (pct >= 70) return 8;
+    if (pct >= 60) return 7;
+    if (pct >= 50) return 6;
+    if (pct >= 40) return 5;
+    return 0;
+  }
+
+  function barColor(pct) {
+    if (pct >= 75) return '#16a34a';
+    if (pct >= 50) return '#d97706';
+    return '#dc2626';
+  }
+
+  function addSubject() {
+    const name = document.getElementById('f-name').value.trim();
+    const max = parseFloat(document.getElementById('f-max').value);
+    const obtained = parseFloat(document.getElementById('f-obtained').value);
+    const type = document.getElementById('f-type').value;
+
+    if (!name) { showToast('Please enter a subject name'); return; }
+    if (!max || max <= 0) { showToast('Max marks must be greater than 0'); return; }
+    if (isNaN(obtained) || obtained < 0) { showToast('Please enter valid marks obtained'); return; }
+    if (obtained > max) { showToast('Marks obtained cannot exceed max marks'); return; }
+
+    subjects.push({ id: Date.now(), name, max, obtained, type });
+    localStorage.setItem('srt-subjects', JSON.stringify(subjects));
+
+    document.getElementById('f-name').value = '';
+    document.getElementById('f-obtained').value = '';
+    document.getElementById('f-max').value = '100';
+    document.getElementById('addForm').classList.remove('open');
+
+    renderTable();
+    showToast('Subject added successfully!');
+  }
+
+  function deleteSubject(id) {
+    subjects = subjects.filter(s => s.id !== id);
+    localStorage.setItem('srt-subjects', JSON.stringify(subjects));
+    renderTable();
+    showToast('Subject removed');
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('resultsBody');
+    const empty = document.getElementById('emptyState');
+
+    if (subjects.length === 0) {
+      tbody.innerHTML = '';
+      empty.style.display = 'block';
+      updateSummary([], 0, 0);
+      document.getElementById('resultFooter').classList.remove('show');
+      return;
+    }
+
+    empty.style.display = 'none';
+    let html = '';
+    let totalMax = 0, totalObtained = 0, passed = 0, failed = 0;
+
+    subjects.forEach((s, i) => {
+      const pct = (s.obtained / s.max) * 100;
+      const { g, cls } = getGrade(pct);
+      const isPass = pct >= 40;
+      if (isPass) passed++; else failed++;
+      totalMax += s.max;
+      totalObtained += s.obtained;
+      const color = barColor(pct);
+
+      html += `<tr>
+        <td style="color:var(--muted);font-size:0.8rem;">${i + 1}</td>
+        <td class="subject-name">${s.name}</td>
+        <td style="font-size:0.8rem;color:var(--muted);">${s.type}</td>
+        <td>${s.max}</td>
+        <td><strong>${s.obtained}</strong></td>
+        <td>
+          <div class="pct-bar-wrap">
+            <span style="font-size:0.82rem;min-width:38px;">${pct.toFixed(1)}%</span>
+            <div class="pct-bar"><div class="pct-fill" style="width:${Math.min(pct,100)}%;background:${color};"></div></div>
+          </div>
+        </td>
+        <td><span class="${cls}">${g}</span></td>
+        <td><span class="badge ${isPass ? 'badge-pass' : 'badge-fail'}">${isPass ? 'PASS' : 'FAIL'}</span></td>
+        <td><button class="delete-btn" onclick="deleteSubject(${s.id})" title="Remove">&#128465;</button></td>
+      </tr>`;
+    });
+
+    tbody.innerHTML = html;
+    updateSummary(subjects, passed, failed, totalObtained, totalMax);
+  }
+
+  function updateSummary(subs, passed, failed, totalObtained, totalMax) {
+    const n = subs.length;
+    document.getElementById('s-total').textContent = n;
+    document.getElementById('s-pass').textContent = passed;
+    document.getElementById('s-fail').textContent = failed;
+
+    if (n === 0) {
+      document.getElementById('s-pct').textContent = '—';
+      document.getElementById('s-gpa').textContent = '—';
+      document.getElementById('s-grade').textContent = '—';
+      return;
+    }
+
+    const overallPct = (totalObtained / totalMax) * 100;
+    const gpa = getGPA(overallPct);
+    const { g } = getGrade(overallPct);
+
+    document.getElementById('s-pct').textContent = overallPct.toFixed(1) + '%';
+    document.getElementById('s-gpa').textContent = gpa.toFixed(1);
+    document.getElementById('s-grade').textContent = g;
+
+    updateResultFooter(n, passed, failed, totalObtained, totalMax, overallPct, gpa, g);
+    document.getElementById('resultFooter').classList.add('show');
+  }
+
+  function updateResultFooter(n, passed, failed, totalObtained, totalMax, pct, gpa, grade) {
+    const info = JSON.parse(localStorage.getItem('srt-info') || '{}');
+    document.getElementById('r-name').textContent = info.name || '—';
+    document.getElementById('r-roll').textContent = info.roll || '—';
+    document.getElementById('r-sem').textContent = (info.sem ? info.sem : '—') + (info.year ? '  ·  ' + info.year : '');
+    if (n === undefined) return;
+    document.getElementById('r-total').textContent = n;
+    document.getElementById('r-marks').textContent = totalObtained + ' / ' + totalMax;
+    document.getElementById('r-pct').textContent = pct ? pct.toFixed(2) + '%' : '—';
+    document.getElementById('r-gpa').textContent = gpa !== undefined ? gpa.toFixed(1) : '—';
+    document.getElementById('r-grade').textContent = grade || '—';
+    document.getElementById('r-pass').textContent = passed !== undefined ? passed : '—';
+    document.getElementById('r-fail').textContent = failed !== undefined ? failed : '—';
+    const result = (failed === 0 && n > 0) ? '✅ PASSED' : (n > 0 ? '❌ FAIL (Arrears: ' + failed + ')' : '—');
+    document.getElementById('r-result').textContent = result;
+  }
+
+  function clearAll() {
+    if (!confirm('Clear all subjects and data? This cannot be undone.')) return;
+    subjects = [];
+    localStorage.removeItem('srt-subjects');
+    renderTable();
+    showToast('All data cleared');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('addForm').classList.contains('open')) addSubject();
+  });
+
+  loadInfo();
+  renderTable();
+</script>
+</body>
+</html>
